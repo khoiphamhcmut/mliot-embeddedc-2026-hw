@@ -5,7 +5,7 @@ current_speed: Thuộc phân vùng Stack trên bộ nhớ RAM
 
 Task 4.3
 Khi chạy giả lập trên máy tính: Khi vòng lặp đệ quy vô hạn làm cạn kiệt dung lượng Stack cho phép, hệ điều hành sẽ can thiệp ngay lập tức và cưỡng chế dừng tiến trình để bảo vệ an toàn cho hệ thống. Chương trình sẽ thoát đột ngột và in ra màn hình Terminal các thông báo lỗi như Segmentation Fault hoặc Stack Overflow
-Khi chạy trên vi điều khiển thực tế: Vùng nhớ Stack thường phát triển từ địa chỉ cao xuống địa chỉ thấp (grows down), trong khi vùng Heap lại phát triển ngược lên (grows up). Khi đệ quy vô hạn xảy ra, Stack sẽ liên tục phình to cho đến khi xảy ra sự cố va chạm (Collision): Stack đè vào vùng Heap hoặc ghi đè lên các biến ở phân vùng dữ liệu khác. Ngay khi CPU phát hiện con trỏ ngăn xếp truy cập vào một vùng nhớ không hợp lệ, lõi ARM sẽ kích hoạt một ngắt ngoại lệ nghiêm trọng và nhảy vào hàm xử lý HardFault_Handler. Thông thường, hàm này chứa một vòng lặp vô hạn while(1), khiến hệ thống bị treo cứng hoàn toàn để chờ kỹ sư phần mềm kết nối mạch nạp vào gỡ lỗi
+Khi chạy trên vi điều khiển thực tế: Vùng nhớ Stack thường phát triển từ địa chỉ cao xuống địa chỉ thấp (grows down), trong khi vùng Heap lại phát triển ngược lên (grows up). Khi đệ quy vô hạn xảy ra, Stack sẽ liên tục phình to cho đến khi xảy ra sự cố va chạm (Collision): Stack đè vào vùng Heap hoặc ghi đè lên các biến ở phân vùng dữ liệu khác. Ngay khi CPU phát hiện con trỏ ngăn xếp truy cập vào một vùng nhớ không hợp lệ, lõi ARM sẽ kích hoạt một ngắt ngoại lệ nghiêm trọng và nhảy vào hàm xử lý HardFault_Handler. Thông thường, hàm này chứa một vòng lặp vô hạn while(1), khiến hệ thống bị treo cứng hoàn toàn để chờ lập trình viên kết nối mạch nạp vào gỡ lỗi
 
 
 Task 5
