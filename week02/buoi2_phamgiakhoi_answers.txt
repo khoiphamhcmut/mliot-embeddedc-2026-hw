@@ -1,0 +1,18 @@
+Task 4.2
+BIKE_MODEL: Thuộc phân vùng .rodata (Read-Only Data) trên bộ nhớ ROM
+total_odometer: Thuộc phân vùng .bss trên bộ nhớ RAM
+current_speed: Thuộc phân vùng Stack trên bộ nhớ RAM
+
+Task 4.3
+Khi chạy giả lập trên máy tính: Khi vòng lặp đệ quy vô hạn làm cạn kiệt dung lượng Stack cho phép, hệ điều hành sẽ can thiệp ngay lập tức và cưỡng chế dừng tiến trình để bảo vệ an toàn cho hệ thống. Chương trình sẽ thoát đột ngột và in ra màn hình Terminal các thông báo lỗi như Segmentation Fault hoặc Stack Overflow
+Khi chạy trên vi điều khiển thực tế: Vùng nhớ Stack thường phát triển từ địa chỉ cao xuống địa chỉ thấp (grows down), trong khi vùng Heap lại phát triển ngược lên (grows up). Khi đệ quy vô hạn xảy ra, Stack sẽ liên tục phình to cho đến khi xảy ra sự cố va chạm (Collision): Stack đè vào vùng Heap hoặc ghi đè lên các biến ở phân vùng dữ liệu khác. Ngay khi CPU phát hiện con trỏ ngăn xếp truy cập vào một vùng nhớ không hợp lệ, lõi ARM sẽ kích hoạt một ngắt ngoại lệ nghiêm trọng và nhảy vào hàm xử lý HardFault_Handler. Thông thường, hàm này chứa một vòng lặp vô hạn while(1), khiến hệ thống bị treo cứng hoàn toàn để chờ kỹ sư phần mềm kết nối mạch nạp vào gỡ lỗi
+
+
+Task 5
+Kích thước của mảng trip_history: 20000 phần tử x 2 bytes/phần tử (kiểu uint16_t) = 40.000 bytes = 40 KB.
+
+Ta chọn cách 1 (uint16_t trip_history[20000] = {0};)
+Giải thích:
+Do mảng được khởi tạo với toàn bộ giá trị bằng 0, trình biên dịch (Linker) sẽ tự động xếp mảng này vào phân vùng .bss. Đặc điểm của phân vùng .bss là không lưu trữ dữ liệu thực tế trên bộ nhớ Flash. Mảng này tiêu tốn 0 KB trên Flash và chỉ yêu cầu vi điều khiển cấp phát 40 KB trên vùng RAM khi khởi động. Bộ nhớ RAM còn trống 128 KB và dung lượng Flash (còn 20 KB) không bị ảnh hưởng.
+
+Cách 2 không được chọn vì có các phần tử được khởi tạo với giá trị khác 0, Linker bắt buộc phải xếp mảng này vào phân vùng .data. Toàn bộ 40 KB dữ liệu phải được lưu trữ vật lý trên bộ nhớ Flash, sau đó mới được sao chép sang RAM trong quá trình khởi động. Do bộ nhớ Flash của hệ thống chỉ còn trống 20 KB, trình biên dịch sẽ báo lỗi vượt quá dung lượng (Overflow) và không thể nạp chương trình xuống vi điều khiển.
