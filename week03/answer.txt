@@ -1,0 +1,42 @@
+TASK 1: PHÂN TÍCH TRÌNH TỰ VÀ CÔNG DỤNG CỦA TOOLCHAIN 
+1.1. Công dụng chính của 4 công cụ:
+
+CMake: Trình sinh cấu hình biên dịch. Đọc `CMakeLists.txt` để tự động tạo ra các kịch bản build (cho Ninja/Makefile).
+Ninja: Trình quản lý biên dịch tốc độ cao. Thực thi kịch bản từ CMake để điều phối quá trình build song song.
+arm-none-eabi-gcc: Trình biên dịch chéo (Cross-compiler). Dịch mã nguồn C thành mã đối tượng (.o) và liên kết thành file thực thi cho ARM Cortex-M.
+STM32_Programmer_CLI: Công cụ dòng lệnh giao tiếp với ST-Link để nạp (flash), xóa, kiểm tra firmware (.bin/.hex) vào chip.
+
+1.2. Trình tự logic luồng làm việc:
+Trình tự: CMake -> Ninja -> arm-none-eabi-gcc -> STM32_Programmer_CLI.
+
+  + CMake quét dự án và tạo kịch bản biên dịch.
+  + Ninja đọc kịch bản, ra lệnh cho Compiler hoạt động.
+  + Compiler dịch mã nguồn `.c` thành `.o`, sau đó Linker liên kết chúng tạo ra file nhị phân cuối cùng `.bin`.
+  + STM32_Programmer_CLI lấy file `.bin` nạp trực tiếp vào bộ nhớ vật lý của chip.
+
+
+TASK 2: PHÂN BỔ VAI TRÒ CỦA LINKER VÀ NINJA
+2.1. Vai trò của Linker và sự khác biệt giữa .bin và .o:
+
+Lý do không nạp file .o: File `.o` là mã máy rời rạc, sử dụng địa chỉ tương đối và chưa liên kết thư viện nên chip không thể hiểu.
+Vai trò Linker & đặc tính .bin: Linker gom các file `.o`, cấp địa chỉ vật lý tuyệt đối (dựa trên Linker Script). Sản phẩm cuối là file `.bin` - bản nhị phân nguyên thủy chứa dữ liệu ánh xạ 1-1 vào các ô nhớ Flash.
+
+2.2. Tính năng Build tăng dần của Ninja:
+
+Vai trò: Giảm thiểu thời gian build bằng cách chỉ biên dịch lại những file bị sửa đổi.
+Cơ chế: Ninja so sánh nhãn thời gian (Timestamp). Nếu file mã nguồn (VD: `main.c`) có thời gian chỉnh sửa mới hơn file đối tượng (`main.c.obj`), nó sẽ gọi Compiler để dịch lại duy nhất file đó.
+
+TASK 3: BẢN ĐỒ BỘ NHỚ VÀ LINKER SCRIPT
+3.1. Phân tích VMA và LMA của vùng .data:
+
+LMA (Flash): Địa chỉ lưu trữ cố định, giúp giữ lại giá trị khởi tạo của biến khi mất điện.
+VMA (RAM): Địa chỉ thực thi, nơi CPU thao tác đọc/ghi biến với tốc độ cao khi chương trình chạy.
+=> Kết luận: Vùng `.data` cần cả hai vì giá trị gốc phải được bảo toàn ở Flash (LMA), nhưng khi hoạt động phải được chuyển lên RAM (VMA) để thao tác thay đổi.
+
+3.2. Rủi ro nếu Reset_Handler quên sao chép .data:
+Nếu Startup code không chép dữ liệu từ Flash sang RAM, các biến có khởi tạo trên RAM sẽ mang giá trị rác ngẫu nhiên. Hậu quả là thuật toán chạy sai hoàn toàn hoặc chip rơi vào lỗi nghiêm trọng (HardFault).
+
+TASK 4: CÂU LỆNH ĐIỀU KHIỂN HỆ THỐNG
+4.1. Câu lệnh CMake cấu hình: cmake -B build -G Ninja
+
+4.2. Câu lệnh Ninja biên dịch: ninja -C build
